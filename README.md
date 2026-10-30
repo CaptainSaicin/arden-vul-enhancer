@@ -57,7 +57,7 @@ All three modes were tested against the supported complete book. Checks covered 
 | Yellow | Important GM information, treasure, discoverable items, keys, maps, documents, clues, and operating instructions |
 | Green | Player-shareable descriptions, inscriptions, dialogue, and rumors when available to the characters |
 
-Highlights have **no comment text or attached pop-up notes**. Green text still follows the book's visibility, language, discovery, and encounter conditions. Rumors retain their authored uncertainty. When selected, the color key is appended after the original book, so original page positions stay the same.
+Highlights have **no comment text or attached pop-up notes**. When selected, the color key is appended after the original book, so original page positions stay the same.
 
 ## Command-line use
 
