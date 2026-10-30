@@ -26,9 +26,7 @@ The app works locally. Your PDF is not uploaded. It saves a separate output file
 
 The desktop downloads include Python and the required library. You do not have to install Python separately. Windows and Linux packages contain a supporting `_internal` folder: keep it with the executable.
 
-**If there is no Release yet:** use the source launchers below, or follow [the GitHub publishing guide](docs/GITHUB_GUIDE.md) to generate the desktop downloads.
-
-### Run the source project
+### Slightly more involved: Run the source project
 
 Install [Python](https://www.python.org/downloads/) first; Python **3.12** is recommended, and **3.10 or later** is required. Extract this source project to a normal writable folder.
 
