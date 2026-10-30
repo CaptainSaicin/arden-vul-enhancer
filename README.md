@@ -10,7 +10,7 @@ Choose one of three results:
 | Highlights only | 19,890 reviewed color highlights, with an optional color-key page |
 | Both | The navigation updates and the highlights together |
 
-The app works locally. Your PDF is not uploaded. It saves a separate output file and leaves the original alone. It does not require an AI subscription, API key, or online service to process the book.
+The app works locally. Your PDF is not uploaded. It saves a separate output file and leaves the original alone.
 
 ![The Arden Vul Enhancer desktop app, showing the file chooser, optional updates, and four-color key.](docs/app-screenshot.png)
 
