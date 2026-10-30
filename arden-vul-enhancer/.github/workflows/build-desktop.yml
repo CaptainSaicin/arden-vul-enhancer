@@ -1,0 +1,64 @@
+name: Build desktop downloads
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+            label: Windows-x64
+          - runner: macos-15
+            label: macOS-Apple-Silicon
+          - runner: macos-15-intel
+            label: macOS-Intel
+          - runner: ubuntu-24.04
+            label: Linux-x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-build.txt
+      - name: Install Linux GUI dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y python3-tk
+      - name: Install build dependencies
+        run: python -m pip install -r requirements-build.txt
+      - name: Check that no commercial PDF was committed
+        shell: python
+        run: |
+          from pathlib import Path
+          import subprocess
+          names = subprocess.check_output(["git", "ls-files", "-z"]).decode().split("\0")
+          books = [name for name in names if name.lower().endswith(".pdf")]
+          if books:
+              raise SystemExit("Remove PDF files from the repository before building: " + ", ".join(books))
+      - name: Run tests using synthetic documents
+        run: python -m unittest discover -s tests -v
+      - name: Build desktop application and archive
+        run: python tools/build_desktop.py --platform-label "${{ matrix.label }}"
+      - name: Upload downloadable package
+        uses: actions/upload-artifact@v7
+        with:
+          path: release/*.zip
+          archive: false
+          if-no-files-found: error
+          retention-days: 30
