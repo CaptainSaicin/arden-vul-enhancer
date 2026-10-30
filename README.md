@@ -46,8 +46,6 @@ This release supports the **complete, 1,122-page source layout used for this edi
 
 Scans, reflowed PDFs, differently paginated editions, and the individual-volume PDFs are not supported by this patch. Use the original book as input. If the compatibility check rejects a copy, the app explains the mismatch and does not apply misplaced marks.
 
-The tool is a reviewed patch for this book. It does not automatically infer new links or classify the text of an arbitrary PDF.
-
 ## Validation
 
 All three modes were tested against the supported complete book. Checks covered every original page and every generated navigation or highlight entry, and the original PDF remained unchanged. Eleven synthetic regression tests and a clean local Linux desktop build also passed. See [the validation record](docs/VALIDATION.md) for exact counts and platform testing status.
