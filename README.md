@@ -40,7 +40,7 @@ The launcher creates a private `.venv` folder and installs the pinned dependency
 
 ## Which PDF does it support?
 
-This release supports the **complete, 1,122-page source layout used for this edition of the patch**. It checks the document's text and its placement before adding coordinates. Matching books with additional separate vendor watermark lines can be accepted when the original book text and positions are unchanged. Renaming a file is fine.
+This release supports the **complete, 1,122-page DriveThruRPG sourced PDF for this edition of the patch**. It checks the document's text and its placement before adding coordinates. Matching books with additional separate vendor watermark lines can be accepted when the original book text and positions are unchanged. Renaming a file is fine.
 
 Scans, reflowed PDFs, differently paginated editions, and the individual-volume PDFs are not supported by this patch. Use the original book as input. If the compatibility check rejects a copy, the app explains the mismatch and does not apply misplaced marks.
 
