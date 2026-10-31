@@ -213,6 +213,20 @@ def _annotation_refs(doc, page):
     return re.findall(r"\d+\s+\d+\s+R", value) if kind in ("array", "xref") else []
 
 
+def _draw_link_underlines(page, items):
+    for item in items:
+        rect = fitz.Rect(item["rect"])
+        if rect.width <= 0 or rect.height <= 0:
+            continue
+        # Put the underlines just below the text and use a muted link color so the words stay readable.
+        underline = fitz.Rect(rect.x0, max(rect.y0 + 2, rect.y1 - 4.5), rect.x1, rect.y1 - 1.75)
+        annot = page.add_underline_annot(underline)
+        annot.set_colors(stroke=(.18, .36, .62))
+        annot.set_opacity(.72)
+        annot.set_flags(fitz.PDF_ANNOT_IS_PRINT)
+        annot.update()
+
+
 def _add_highlights(doc, page, items, styles):
     oldrefs = _annotation_refs(doc, page)
     newrefs = []
@@ -230,17 +244,6 @@ def _add_highlights(doc, page, items, styles):
     if newrefs:
         # Existing and newly inserted links remain above highlights for clicks.
         doc.xref_set_key(page.xref, "Annots", "[" + " ".join(newrefs + oldrefs) + "]")
-
-
-def _add_link_underlines(page, items):
-    for item in items:
-        rect = fitz.Rect(item["rect"])
-        if rect.width <= 0 or rect.height <= 0:
-            continue
-        y = rect.y1 - max(1.0, min(3.0, rect.height * .2))
-        page.draw_line(fitz.Point(rect.x0, y), fitz.Point(rect.x1, y),
-                       color=(.08, .22, .38), width=max(.7, min(1.5, rect.height * .12)),
-                       overlay=True)
 
 
 def _add_color_key(doc, counts, styles):
@@ -357,7 +360,7 @@ def enhance_pdf(input_path, output_path, options: EnhancementOptions | None = No
                     else:
                         link.update(kind=fitz.LINK_GOTO, page=item["page"], to=fitz.Point(item["to"]), zoom=item.get("zoom", 0))
                     page.insert_link(link)
-                    _add_link_underlines(page, [item])
+                    _draw_link_underlines(page, [item])
                     links_added += 1
             if options.highlights:
                 items = patch["highlights"]["pages"].get(str(p), [])
