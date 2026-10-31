@@ -232,6 +232,17 @@ def _add_highlights(doc, page, items, styles):
         doc.xref_set_key(page.xref, "Annots", "[" + " ".join(newrefs + oldrefs) + "]")
 
 
+def _add_link_underlines(page, items):
+    for item in items:
+        rect = fitz.Rect(item["rect"])
+        if rect.width <= 0 or rect.height <= 0:
+            continue
+        y = rect.y1 - max(1.0, min(3.0, rect.height * .2))
+        page.draw_line(fitz.Point(rect.x0, y), fitz.Point(rect.x1, y),
+                       color=(.08, .22, .38), width=max(.7, min(1.5, rect.height * .12)),
+                       overlay=True)
+
+
 def _add_color_key(doc, counts, styles):
     page = doc.new_page(width=612, height=792)
     ink, muted = (.10, .14, .18), (.35, .39, .43)
@@ -346,6 +357,7 @@ def enhance_pdf(input_path, output_path, options: EnhancementOptions | None = No
                     else:
                         link.update(kind=fitz.LINK_GOTO, page=item["page"], to=fitz.Point(item["to"]), zoom=item.get("zoom", 0))
                     page.insert_link(link)
+                    _add_link_underlines(page, [item])
                     links_added += 1
             if options.highlights:
                 items = patch["highlights"]["pages"].get(str(p), [])

@@ -63,7 +63,12 @@ class EngineTests(unittest.TestCase):
             self.assertEqual(report["highlights_added"], 2 if highlights else 0)
             for i in range(2):
                 self.assertEqual(src[i].get_text(), result[i].get_text())
-                self.assertEqual([src.xref_stream(x) for x in src[i].get_contents()], [result.xref_stream(x) for x in result[i].get_contents()])
+                src_streams = [src.xref_stream(x) for x in src[i].get_contents()]
+                result_streams = [result.xref_stream(x) for x in result[i].get_contents()]
+                if navigation:
+                    self.assertEqual(src_streams, result_streams[:-1])
+                else:
+                    self.assertEqual(src_streams, result_streams)
                 for annot in result[i].annots() or []:
                     self.assertFalse(annot.popup_xref)
                     self.assertFalse(any(v for k, v in annot.info.items() if k != "id"))
@@ -73,6 +78,14 @@ class EngineTests(unittest.TestCase):
             else:
                 self.assertEqual(result.get_toc()[-2:], src.get_toc())
         return out
+
+    def test_added_hyperlinks_are_underlined(self):
+        out = self.root / "underlined.pdf"
+        engine.enhance_pdf(self.source, out, engine.EnhancementOptions(True, False, False))
+        with fitz.open(out) as result:
+            for page in result[:2]:
+                self.assertTrue(page.get_drawings())
+                self.assertTrue(any(item[0] == "l" for drawing in page.get_drawings() for item in drawing["items"]))
 
     def test_all_three_modes_and_no_key(self):
         for nav, hi, key in [(True, False, True), (False, True, True), (True, True, True), (True, True, False)]:
