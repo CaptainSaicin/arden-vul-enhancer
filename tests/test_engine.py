@@ -85,7 +85,8 @@ class EngineTests(unittest.TestCase):
                         underlines.append(annot.rect)
             self.assertGreater(len(underlines), 0)
             self.assertTrue(all(rect.y0 >= 75 for rect in underlines))
-            self.assertTrue(all(rect.height <= 3.5 for rect in underlines))
+            self.assertTrue(all(2.5 <= rect.height <= 4.5 for rect in underlines))
+            self.assertTrue(all(rect.y0 >= 78 for rect in underlines))
 
     def test_all_three_modes_and_no_key(self):
         for nav, hi, key in [(True, False, True), (False, True, True), (True, True, True), (True, True, False)]:

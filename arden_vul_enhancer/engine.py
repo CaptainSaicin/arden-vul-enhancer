@@ -218,8 +218,8 @@ def _draw_link_underlines(page, items):
         rect = fitz.Rect(item["rect"])
         if rect.width <= 0 or rect.height <= 0:
             continue
-        # Put the underlines just below the text and use a muted link color so the words stay readable.
-        underline = fitz.Rect(rect.x0, max(rect.y0 + 2, rect.y1 - 4.5), rect.x1, rect.y1 - 1.75)
+        # Keep the stroke beneath the text, not directly on the glyphs, and make it a touch bolder so it stays legible.
+        underline = fitz.Rect(rect.x0, max(rect.y0 + 3.5, rect.y1 - 5.5), rect.x1, rect.y1 - 1.5)
         annot = page.add_underline_annot(underline)
         annot.set_colors(stroke=(.18, .36, .62))
         annot.set_opacity(.72)
