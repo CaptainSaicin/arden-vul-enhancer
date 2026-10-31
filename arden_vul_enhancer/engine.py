@@ -218,11 +218,11 @@ def _draw_link_underlines(page, items):
         rect = fitz.Rect(item["rect"])
         if rect.width <= 0 or rect.height <= 0:
             continue
-        # Keep the stroke beneath the text, not directly on the glyphs, and make it a touch bolder so it stays legible.
-        underline = fitz.Rect(rect.x0, max(rect.y0 + 3.5, rect.y1 - 5.5), rect.x1, rect.y1 - 1.5)
+        # Match the weight and offset of ordinary PDF underlines: lower and fully opaque so it stays visible beneath bold text.
+        underline = fitz.Rect(rect.x0, max(rect.y0 + 4.5, rect.y1 - 6.5), rect.x1, rect.y1 - 1.5)
         annot = page.add_underline_annot(underline)
         annot.set_colors(stroke=(.18, .36, .62))
-        annot.set_opacity(.72)
+        annot.set_opacity(1.0)
         annot.set_flags(fitz.PDF_ANNOT_IS_PRINT)
         annot.update()
 
