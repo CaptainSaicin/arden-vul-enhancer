@@ -155,7 +155,7 @@ def inspect_pdf(input_path, progress: Progress | None = None, cancel: threading.
         doc.close()
 
 
-def _bookmark_title(recipe, original_toc, doc, patch, cache):
+def _bookmark_title(recipe, original_toc, doc, patch, cache, exact):
     if "original_toc" in recipe:
         return " ".join(original_toc[recipe["original_toc"]][1].split())
     pieces = []
@@ -165,7 +165,17 @@ def _bookmark_title(recipe, original_toc, doc, patch, cache):
             continue
         p = part["page"]
         if p not in cache:
-            cache[p] = source_text(doc[p], patch["source"]["pages"][p].get("line_hashes"))
+            expected = patch["source"]["pages"][p]
+            if exact:
+                # The file hash establishes the original geometry. Bookmark
+                # offsets depend on text and order, not glyph coordinates,
+                # which can round differently across extraction environments.
+                text = source_text(doc[p])
+                if hashlib.sha256(text.encode("utf-8")).hexdigest() != expected["text_sha256"]:
+                    raise EnhancementError(f"PDF page {p + 1} text could not be verified for bookmark labels; no output was published.")
+                cache[p] = text
+            else:
+                cache[p] = source_text(doc[p], expected.get("line_hashes"))
         text = cache[p][part["start"]:part["end"]]
         if part.get("dehyphenate"):
             text = re.sub(r"(?<=[A-Za-z])-[ \t]*\n[ \t]*(?=[a-z])", "", text)
@@ -184,14 +194,14 @@ def _bookmark_title(recipe, original_toc, doc, patch, cache):
     return title
 
 
-def _toc_from_patch(doc, patch, original_toc, texts):
+def _toc_from_patch(doc, patch, original_toc, texts, exact):
     toc = []
     for item in patch["navigation"]["bookmarks"]:
         dest = {"kind": fitz.LINK_GOTO, "page": item["page"], "to": fitz.Point(item.get("to", [72, 36])), "zoom": item.get("zoom", 0)}
         for key in ("bold", "italic", "color", "collapse"):
             if key in item:
                 dest[key] = item[key]
-        toc.append([item["level"], _bookmark_title(item["title"], original_toc, doc, patch, texts), item["page"] + 1, dest])
+        toc.append([item["level"], _bookmark_title(item["title"], original_toc, doc, patch, texts, exact), item["page"] + 1, dest])
     return toc
 
 
@@ -323,7 +333,7 @@ def enhance_pdf(input_path, output_path, options: EnhancementOptions | None = No
         input_page_count = len(doc)
         original_link_count = sum(len(page.get_links()) for page in doc)
         counts = collections.Counter()
-        toc = _toc_from_patch(doc, patch, original_toc, texts) if options.navigation else original_toc
+        toc = _toc_from_patch(doc, patch, original_toc, texts, exact) if options.navigation else original_toc
         links_added = 0
         for p in range(input_page_count):
             _check_cancel(cancel)

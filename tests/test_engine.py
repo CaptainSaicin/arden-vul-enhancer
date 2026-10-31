@@ -113,6 +113,30 @@ class EngineTests(unittest.TestCase):
         report = engine.enhance_pdf(changed, self.root / "watermark-output.pdf", engine.EnhancementOptions(True, False))
         self.assertFalse(report["exact_source_match"])
 
+    def test_exact_pdf_bookmarks_verify_text_instead_of_glyph_coordinates(self):
+        # Simulate a different rounded glyph coordinate in the patch data.
+        self.patch["source"]["pages"][1]["line_hashes"][0] = "different geometry"
+        out = self.root / "exact.pdf"
+        report = engine.enhance_pdf(self.source, out, engine.EnhancementOptions(True, False))
+        self.assertTrue(report["exact_source_match"])
+        with fitz.open(out) as doc:
+            self.assertIn([1, "Jump to second chamber", 2], doc.get_toc())
+
+        # A non-exact file still needs the position-sensitive compatibility check.
+        changed = self.root / "changed-metadata.pdf"
+        with fitz.open(self.source) as doc:
+            doc.set_metadata({"title": "Different file"})
+            doc.save(changed)
+        with self.assertRaises(engine.EnhancementError):
+            engine.enhance_pdf(changed, self.root / "rejected.pdf", engine.EnhancementOptions(True, False))
+
+    def test_exact_pdf_rejects_unverified_bookmark_text(self):
+        self.patch["source"]["pages"][1]["text_sha256"] = "different text"
+        out = self.root / "rejected.pdf"
+        with self.assertRaisesRegex(engine.EnhancementError, "page 2 text could not be verified"):
+            engine.enhance_pdf(self.source, out, engine.EnhancementOptions(True, False))
+        self.assertFalse(out.exists())
+
     def test_changed_content_is_rejected(self):
         changed = self.root / "different.pdf"
         with fitz.open(self.source) as doc:
